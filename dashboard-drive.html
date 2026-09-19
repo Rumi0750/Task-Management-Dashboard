@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Front Office Desk — Task Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --ink: #1E2A28;
+    --ink-soft: #4B5854;
+    --desk: #E9E2CE;
+    --desk-deep: #DED4B8;
+    --paper: #FAF7EC;
+    --paper-alt: #F3EEDF;
+    --harbor: #2B5D64;
+    --harbor-deep: #1F4448;
+    --harbor-tint: #E3EDEC;
+    --brass: #8C6B2F;
+    --brass-tint: #F1E6CB;
+    --line: #CFC4A2;
+    --line-soft: #E1D8BE;
+    --rust: #A6472A;
+    --rust-tint: #F3E1D9;
+    --amber: #A9782A;
+    --amber-tint: #F2E5C8;
+    --moss: #46704E;
+    --moss-tint: #DFE9DE;
+    --shadow: 0 1px 2px rgba(30,42,40,0.06), 0 6px 20px rgba(30,42,40,0.07);
+    --radius: 10px;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ink: #EDE7D6;
+      --ink-soft: #B9AE93;
+      --desk: #1B2422;
+      --desk-deep: #141C1A;
+      --paper: #212B28;
+      --paper-alt: #263230;
+      --harbor: #6FAAA8;
+      --harbor-deep: #8FC3C0;
+      --harbor-tint: #22322F;
+      --brass: #D8B15C;
+      --brass-tint: #33301F;
+      --line: #3B4642;
+      --line-soft: #2C3835;
+      --rust: #D98B6F;
+      --rust-tint: #3A2A24;
+      --amber: #DCB55D;
+      --amber-tint: #3A3320;
+      --moss: #8FBB92;
+      --moss-tint: #23342A;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDE7D6;
+    --ink-soft: #B9AE93;
+    --desk: #1B2422;
+    --desk-deep: #141C1A;
+    --paper: #212B28;
+    --paper-alt: #263230;
+    --harbor: #6FAAA8;
+    --harbor-deep: #8FC3C0;
+    --harbor-tint: #22322F;
+    --brass: #D8B15C;
+    --brass-tint: #33301F;
+    --line: #3B4642;
+    --line-soft: #2C3835;
+    --rust: #D98B6F;
+    --rust-tint: #3A2A24;
+    --amber: #DCB55D;
+    --amber-tint: #3A3320;
+    --moss: #8FBB92;
+    --moss-tint: #23342A;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--desk);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display { font-family: 'Fraunces', Georgia, serif; }
+
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ---------- Rail ---------- */
+  .rail {
+    width: 240px; flex-shrink: 0;
+    background: var(--harbor-deep);
+    color: var(--harbor-tint);
+    padding: 22px 14px 18px;
+    display: flex; flex-direction: column;
+  }
+  .brandmark { display: flex; align-items: baseline; gap: 8px; padding: 4px 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.14); margin-bottom: 14px; }
+  .brandmark .glyph { font-size: 20px; }
+  .brandmark .name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px; color: #fff; letter-spacing: 0.2px; }
+  .brandmark .sub { display:none; }
+
+  nav.tabs { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .tab {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 8px; cursor: pointer;
+    color: rgba(255,255,255,0.78); font-size: 13.5px;
+    border: none; background: transparent; text-align: left; width: 100%;
+    font-family: inherit;
+  }
+  .tab .num {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    width: 20px; height: 20px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.65); flex-shrink: 0;
+  }
+  .tab:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .tab.active { background: #fff; color: var(--harbor-deep); font-weight: 600; }
+  .tab.active .num { background: var(--brass); color: #fff; }
+  .tab .count { margin-left: auto; font-size: 11.5px; color: rgba(255,255,255,0.55); font-family: 'IBM Plex Mono', monospace; }
+  .tab.active .count { color: var(--harbor); }
+
+  .rail-foot { padding: 10px 10px 0; border-top: 1px solid rgba(255,255,255,0.14); margin-top: 12px; font-size: 11.5px; color: rgba(255,255,255,0.5); }
+
+  /* ---------- Main ---------- */
+  main { flex: 1; min-width: 0; padding: 28px 34px 60px; }
+  .topline { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .topline h1 { margin: 0 0 4px; font-size: 26px; font-weight: 600; color: var(--ink); }
+  .topline .meta { color: var(--ink-soft); font-size: 13px; }
+  .topline .today { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft); background: var(--paper); border: 1px solid var(--line-soft); padding: 5px 10px; border-radius: 6px; }
+
+  .stat-strip { display: flex; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; }
+  .stat-chip { background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--radius); padding: 12px 16px; min-width: 118px; box-shadow: var(--shadow); }
+  .stat-chip .n { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; line-height: 1; }
+  .stat-chip .l { font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+  .stat-chip.open .n { color: var(--rust); }
+  .stat-chip.process .n { color: var(--amber); }
+  .stat-chip.closed .n { color: var(--moss); }
+
+  .btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    border-radius: 7px; padding: 8px 14px; border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--harbor); color: #fff; }
+  .btn-primary:hover { background: var(--harbor-deep); }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { background: var(--paper-alt); }
+  .btn-sm { padding: 5px 9px; font-size: 12px; }
+
+  /* ---------- Overview ---------- */
+  .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+  .panel { background: var(--paper); border: 1px solid var(--line-soft); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; }
+  .panel h2 { margin: 0 0 14px; font-size: 15.5px; font-weight: 600; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 34px; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .bar-row .cl { font-size: 12.5px; color: var(--ink-soft); }
+  .bar-track { height: 9px; background: var(--paper-alt); border-radius: 5px; overflow: hidden; display: flex; }
+  .bar-seg { height: 100%; }
+  .bar-row .ct { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--ink-soft); text-align: right; }
+  .legend { display: flex; gap: 14px; margin-top: 12px; font-size: 11.5px; color: var(--ink-soft); flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  .upcoming-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .upcoming-item:last-child { border-bottom: none; }
+  .upcoming-item .ud { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #fff; background: var(--harbor); border-radius: 6px; padding: 4px 7px; text-align: center; flex-shrink: 0; min-width: 40px; }
+  .upcoming-item .ud.soon { background: var(--rust); }
+  .upcoming-item .un { font-size: 13px; font-weight: 500; }
+  .upcoming-item .us { font-size: 11.5px; color: var(--ink-soft); }
+  .empty-note { color: var(--ink-soft); font-size: 12.5px; padding: 6px 0; }
+
+  /* ---------- Category view ---------- */
+  .cat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+  .cat-head h1 { font-size: 22px; margin: 0; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .toolbar input[type=text], .toolbar select {
+    font-family: inherit; font-size: 12.5px; padding: 7px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+  }
+  .toolbar input[type=text] { min-width: 190px; }
+  .status-filter { display: flex; gap: 6px; margin-left: auto; }
+  .pill-filter {
+    font-size: 11.5px; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--line);
+    background: var(--paper); color: var(--ink-soft); cursor: pointer; font-family: inherit;
+  }
+  .pill-filter.active { background: var(--harbor); border-color: var(--harbor); color: #fff; }
+
+  table.reg { width: 100%; border-collapse: collapse; background: var(--paper); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  table.reg th { text-align: left; font-size: 11px; text-transform: none; color: var(--ink-soft); font-weight: 600; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--paper-alt); white-space: nowrap; }
+  table.reg td { padding: 10px 12px; border-bottom: 1px solid var(--line-soft); font-size: 13px; vertical-align: top; }
+  table.reg tr:last-child td { border-bottom: none; }
+  table.reg tr:hover td { background: var(--paper-alt); }
+  .rowname { font-weight: 600; }
+  .rowsub { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+  .rem-note { font-size: 12px; color: var(--ink-soft); max-width: 220px; }
+
+  .status-select {
+    font-family: inherit; font-size: 11.5px; font-weight: 600; border-radius: 20px; padding: 4px 10px 4px 8px;
+    border: 1px solid transparent; cursor: pointer;
+  }
+  .status-select.st-open { background: var(--rust-tint); color: var(--rust); }
+  .status-select.st-process { background: var(--amber-tint); color: var(--amber); }
+  .status-select.st-closed { background: var(--moss-tint); color: var(--moss); }
+
+  .icon-btn { background: transparent; border: none; cursor: pointer; color: var(--ink-soft); padding: 4px; border-radius: 5px; }
+  .icon-btn:hover { background: var(--paper-alt); color: var(--rust); }
+
+  .arrival-flag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; padding: 2px 6px; border-radius: 4px; background: var(--rust-tint); color: var(--rust); margin-left: 6px; white-space: nowrap; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--ink-soft); }
+  .empty-state .eg { font-size: 30px; margin-bottom: 8px; }
+  .empty-state .et { font-family: 'Fraunces', serif; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
+
+  /* ---------- Modal ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(20,25,23,0.45); display: none; align-items: flex-start; justify-content: center; padding: 6vh 16px; z-index: 50; overflow-y: auto; }
+  .overlay.show { display: flex; }
+  .modal { background: var(--paper); border-radius: 12px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 1px solid var(--line-soft); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line-soft); }
+  .modal-head h3 { margin: 0; font-size: 16px; }
+  .modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; max-height: 64vh; overflow-y: auto; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+  .field input, .field select, .field textarea {
+    font-family: inherit; font-size: 13.5px; padding: 8px 10px; border-radius: 7px;
+    border: 1px solid var(--line); background: var(--desk-deep); background: var(--paper-alt); color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 56px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .check-chip { display: flex; align-items: center; gap: 6px; font-size: 12.5px; background: var(--paper-alt); border: 1px solid var(--line-soft); padding: 6px 10px; border-radius: 20px; cursor: pointer; }
+  .check-chip input { margin: 0; }
+  .modal-foot { padding: 14px 20px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--line-soft); }
+
+  .storage-note { display:flex; align-items:center; gap:6px; font-size: 11px; color: var(--ink-soft); margin-top: auto; padding-top: 10px; }
+  .storage-dot { width:6px; height:6px; border-radius:50%; background: var(--moss); flex-shrink:0; }
+  .rail-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+  .rail-link { background: transparent; border: none; text-align: left; padding: 0; font-family: inherit; font-size: 11px; color: rgba(255,255,255,0.55); cursor: pointer; }
+  .rail-link:hover { color: #fff; text-decoration: underline; }
+  .rail-link.strong { color: var(--brass); font-weight: 600; }
+  .storage-dot.local { background: var(--amber); }
+
+  @media (max-width: 860px) {
+    .shell { flex-direction: column; }
+    .rail { width: 100%; flex-direction: row; align-items: center; padding: 12px 14px; overflow-x: auto; }
+    .brandmark { border-bottom: none; border-right: 1px solid rgba(255,255,255,0.14); margin-bottom: 0; padding: 0 14px 0 2px; }
+    nav.tabs { flex-direction: row; gap: 4px; }
+    .tab .count { display: none; }
+    .rail-foot { display: none; }
+    main { padding: 18px 16px 40px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    table.reg { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brandmark"><span class="glyph">🛎️</span><span class="name">Front Office Desk</span></div>
+    <nav class="tabs" id="navTabs"></nav>
+    <div class="rail-foot" id="storageNote">Checking storage…</div>
+  </aside>
+  <main id="main"></main>
+</div>
+
+<input type="file" id="importFile" accept="application/json" style="display:none" onchange="if(this.files[0]) importJson(this.files[0]); this.value='';">
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Log a task</h3>
+      <button class="icon-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="saveBtn">Save entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== Category configuration ===================== */
+const CATEGORIES = [
+  { key: 'fit', num: 1, label: 'FIT Bookings', short: 'FIT', primaryField: 'guestName', descTpl: (t)=> t.source || '', dateField: 'arrivalDate',
+    fields: [
+      { key: 'guestName', label: 'Guest name', type: 'text', required: true },
+      { key: 'source', label: 'Source', type: 'select', options: ['Phone','Email','WhatsApp','Travel Agent'] },
+      { key: 'bookingDate', label: 'Date of booking', type: 'date' },
+      { key: 'arrivalDate', label: 'Arrival date', type: 'date' },
+      { key: 'departureDate', label: 'Departure date', type: 'date' },
+      { key: 'bookingId', label: 'Booking ID', type: 'text' },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'travelAgent', num: 2, label: 'Travel Agent / Tour Operator Bookings', short: 'Travel Agent', primaryField: 'guestName', descTpl: (t)=> t.travelAgentName || t.source || '', dateField: 'arrivalDate',
+    fields: [
+      { key: 'guestName', label: 'Guest name', type: 'text', required: true },
+      { key: 'travelAgentName', label: 'Travel agent / operator', type: 'text' },
+      { key: 'source', label: 'Source', type: 'select', options: ['Phone','Email','WhatsApp','Travel Agent'] },
+      { key: 'bookingDate', label: 'Date of booking', type: 'date' },
+      { key: 'arrivalDate', label: 'Arrival date', type: 'date' },
+      { key: 'departureDate', label: 'Departure date', type: 'date' },
+      { key: 'bookingId', label: 'Booking ID', type: 'text' },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'corporate', num: 3, label: 'Corporate Bookings', short: 'Corporate', primaryField: 'guestName', descTpl: (t)=> t.corporateName || t.source || '', dateField: 'arrivalDate',
+    fields: [
+      { key: 'guestName', label: 'Guest name', type: 'text', required: true },
+      { key: 'corporateName', label: 'Corporate name', type: 'text' },
+      { key: 'source', label: 'Source', type: 'select', options: ['Phone','Email','WhatsApp','Travel Agent'] },
+      { key: 'bookingDate', label: 'Date of booking', type: 'date' },
+      { key: 'arrivalDate', label: 'Arrival date', type: 'date' },
+      { key: 'departureDate', label: 'Departure date', type: 'date' },
+      { key: 'bookingId', label: 'Booking ID', type: 'text' },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'event', num: 4, label: 'Event Bookings', short: 'Events', primaryField: 'eventName', descTpl: (t)=> t.department || '', dateField: 'bookingDate',
+    fields: [
+      { key: 'eventName', label: 'Event name', type: 'text', required: true },
+      { key: 'department', label: 'Requesting department', type: 'text' },
+      { key: 'bookingDate', label: 'Date of event', type: 'date' },
+      { key: 'placeOfEvent', label: 'Place of event', type: 'text' },
+      { key: 'services', label: 'Services', type: 'multiselect', options: ['Room','Hall','Catering','Event Mgmt Services'] },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'files', num: 5, label: 'Files', short: 'Files', primaryField: 'fileName', descTpl: (t)=> t.fromDept || '', dateField: null,
+    fields: [
+      { key: 'fileName', label: 'File / task name', type: 'text', required: true },
+      { key: 'fromDept', label: 'From department', type: 'select', options: ['MD','BDM','OPERATIONS','FINANCE','WATERSPORTS','NPE','TRANSPORT','COMPANY SECT.','ENGG.'] },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'ota', num: 6, label: 'Online Travel Agents', short: 'OTA', primaryField: 'otaName', descTpl: (t)=> t.particulars || '', dateField: null,
+    fields: [
+      { key: 'otaName', label: 'OTA name', type: 'select', options: ['MMT/Goibibo','Yatra','Booking.com','Agoda','Other'] },
+      { key: 'particulars', label: 'Particulars', type: 'select', options: ['Amendments','Cancellation','Rate parity','Content update','Other'] },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'djubo', num: 7, label: 'Djubo Related Tasks', short: 'Djubo (PMS)', primaryField: 'particulars', descTpl: ()=> '', dateField: null,
+    fields: [
+      { key: 'particulars', label: 'Particulars', type: 'text', required: true },
+      { key: 'remarks', label: 'Remarks', type: 'textarea' },
+    ]},
+  { key: 'agreement', num: 8, label: 'Agreements', short: 'Agreements', primaryField: 'agreementName', descTpl: (t)=> t.counterparty || '', dateField: 'endDate', dateKind: 'expiry', flagWindowDays: 30,
+    fields: [
+      { key: 'agreementName', label: 'Agreement name', type: 'text', required: true },
+      { key: 'counterparty', label: 'Party / vendor', type: 'text' },
+      { key: 'startDate', label: 'Start date', type: 'date' },
+      { key: 'endDate', label: 'End date', type: 'date' },
+      { key: 'remarks', label: 'Remarks / action required', type: 'textarea' },
+    ]},
+];
+const STATUSES = ['Open','In Process','Closed'];
+const STATUS_CLASS = { 'Open': 'st-open', 'In Process': 'st-process', 'Closed': 'st-closed' };
+const STATUS_COLOR = { 'Open': 'var(--rust)', 'In Process': 'var(--amber)', 'Closed': 'var(--moss)' };
+const catByKey = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
+
+/* ===================== State ===================== */
+let view = 'overview';
+let tasks = [];
+let storageMode = 'checking'; // checking | drive-connecting | drive | local
+let filters = { search: '', status: 'all' };
+let editingId = null;
+
+/* ===================== Google Drive storage =====================
+   Replace this with the OAuth 2.0 Web Client ID from your own Google
+   Cloud project (APIs & Services > Credentials). See the setup steps
+   in the chat reply that came with this file. */
+const GOOGLE_CLIENT_ID = '469049452323-q13fnpkihi5empam7s6hanopk5tfng7k.apps.googleusercontent.com';
+const DRIVE_FILE_NAME = 'front-office-desk-data.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+
+let tokenClient = null;
+let accessToken = null;
+let tokenExpiresAt = 0;
+let driveFileId = null;
+let saveTimer = null;
+let lastSavedAt = null;
+
+function clientIdConfigured() {
+  return GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.startsWith('PASTE_');
+}
+
+function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
+
+async function initStorage() {
+  loadLocal(); // always have something to show immediately, even before Drive connects
+  renderAll();
+
+  if (!clientIdConfigured()) {
+    storageMode = 'local';
+    renderAll();
+    return;
+  }
+  waitForGoogleThenInit();
+}
+
+function waitForGoogleThenInit(tries) {
+  tries = tries || 0;
+  if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: () => {}, // overridden per-call by requestToken()
+    });
+    // Try a silent reconnect in case this browser already has an active
+    // Google session that previously granted access. If not, this fails
+    // quietly and the person just clicks "Connect Google Drive".
+    requestToken('').then((resp) => {
+      if (resp && !resp.error) applyToken(resp);
+      else { storageMode = 'local'; renderAll(); }
+    });
+  } else if (tries < 40) {
+    setTimeout(() => waitForGoogleThenInit(tries + 1), 250);
+  } else {
+    storageMode = 'local';
+    renderAll();
+  }
+}
+
+function requestToken(promptType) {
+  return new Promise((resolve) => {
+    if (!tokenClient) { resolve({ error: 'no_client' }); return; }
+    tokenClient.callback = (resp) => resolve(resp);
+    tokenClient.error_callback = (err) => resolve({ error: err && err.type || 'error' });
+    try {
+      tokenClient.requestAccessToken({ prompt: promptType });
+    } catch (e) { resolve({ error: 'exception' }); }
+  });
+}
+
+function applyToken(resp) {
+  accessToken = resp.access_token;
+  tokenExpiresAt = Date.now() + (resp.expires_in * 1000) - 60000;
+  storageMode = 'drive-connecting';
+  renderAll();
+  driveInitFile();
+}
+
+async function connectDrive() {
+  if (!clientIdConfigured()) {
+    alert('Add your Google OAuth Client ID at the top of the script first (GOOGLE_CLIENT_ID).');
+    return;
+  }
+  if (!tokenClient) { waitForGoogleThenInit(); return; }
+  const resp = await requestToken('consent');
+  if (resp && !resp.error) applyToken(resp);
+  else { storageMode = 'local'; renderAll(); }
+}
+
+function disconnectDrive() {
+  if (accessToken && window.google && google.accounts && google.accounts.oauth2) {
+    google.accounts.oauth2.revoke(accessToken, () => {});
+  }
+  accessToken = null; driveFileId = null; storageMode = 'local';
+  renderAll();
+}
+
+async function ensureFreshToken() {
+  if (accessToken && Date.now() < tokenExpiresAt) return true;
+  const resp = await requestToken('');
+  if (resp && !resp.error) { applyTokenSilently(resp); return true; }
+  return false;
+}
+function applyTokenSilently(resp) {
+  accessToken = resp.access_token;
+  tokenExpiresAt = Date.now() + (resp.expires_in * 1000) - 60000;
+}
+
+async function driveFind() {
+  const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`, {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  });
+  if (!res.ok) throw new Error('drive find failed: ' + res.status);
+  const data = await res.json();
+  return (data.files && data.files[0]) || null;
+}
+
+async function driveCreate(content) {
+  const boundary = 'fod_' + Date.now();
+  const metadata = { name: DRIVE_FILE_NAME, mimeType: 'application/json' };
+  const body =
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+    `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(content)}\r\n` +
+    `--${boundary}--`;
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
+    body
+  });
+  if (!res.ok) throw new Error('drive create failed: ' + res.status);
+  return res.json();
+}
+
+async function driveRead(fileId) {
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  });
+  if (!res.ok) throw new Error('drive read failed: ' + res.status);
+  return res.json();
+}
+
+async function driveUpdate(fileId, content) {
+  const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: 'PATCH',
+    headers: { Authorization: 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(content)
+  });
+  if (!res.ok) throw new Error('drive update failed: ' + res.status);
+}
+
+async function driveInitFile() {
+  try {
+    const found = await driveFind();
+    if (found) {
+      driveFileId = found.id;
+      const content = await driveRead(driveFileId);
+      tasks = (content && content.tasks) || [];
+    } else {
+      driveFileId = (await driveCreate({ tasks, savedAt: Date.now() })).id;
+    }
+    storageMode = 'drive';
+    lastSavedAt = Date.now();
+    renderAll();
+  } catch (e) {
+    console.error('Drive init failed', e);
+    storageMode = 'local';
+    renderAll();
+  }
+}
+
+function scheduleDriveSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    if (storageMode !== 'drive' || !driveFileId) return;
+    try {
+      const ok = await ensureFreshToken();
+      if (!ok) { storageMode = 'local'; renderAll(); return; }
+      await driveUpdate(driveFileId, { tasks, savedAt: Date.now() });
+      lastSavedAt = Date.now();
+      renderNav();
+    } catch (e) { console.error('Drive save failed', e); }
+  }, 700);
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem('fod_tasks_v1');
+    tasks = raw ? JSON.parse(raw) : [];
+  } catch (e) { tasks = []; }
+}
+function saveLocal() {
+  try { localStorage.setItem('fod_tasks_v1', JSON.stringify(tasks)); } catch (e) {}
+}
+function persist() {
+  if (storageMode === 'drive') scheduleDriveSave();
+  else saveLocal();
+}
+
+function addTask(category, data) {
+  const body = { id: genId(), category, status: 'Open', createdAt: Date.now(), updatedAt: Date.now(), ...data };
+  tasks.unshift(body);
+  persist();
+  renderAll();
+}
+function patchTask(id, patch) {
+  const t = tasks.find(x => x.id === id);
+  if (t) Object.assign(t, patch, { updatedAt: Date.now() });
+  persist();
+  renderAll();
+}
+function removeTask(id) {
+  tasks = tasks.filter(x => x.id !== id);
+  persist();
+  renderAll();
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify({ tasks, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'front-office-desk-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importJson(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed.tasks)) throw new Error('no tasks array');
+      if (!confirm(`Import ${parsed.tasks.length} tasks? This replaces everything currently loaded.`)) return;
+      tasks = parsed.tasks;
+      persist();
+      renderAll();
+    } catch (e) { alert('Could not read that file as a backup.'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ===================== Helpers ===================== */
+function esc(s) { return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function daysUntil(iso) {
+  if (!iso) return null;
+  const target = new Date(iso + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+function todayStr() {
+  const d = new Date();
+  return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+function countsByStatus(list) {
+  const c = { 'Open': 0, 'In Process': 0, 'Closed': 0 };
+  list.forEach(t => { c[t.status] = (c[t.status] || 0) + 1; });
+  return c;
+}
+
+/* ===================== Nav ===================== */
+function renderNav() {
+  const nav = document.getElementById('navTabs');
+  const items = [{ key: 'overview', num: '—', label: 'Overview' }, ...CATEGORIES];
+  nav.innerHTML = items.map(it => {
+    const isCat = it.key !== 'overview';
+    const count = isCat ? tasks.filter(t => t.category === it.key && t.status !== 'Closed').length : tasks.filter(t => t.status !== 'Closed').length;
+    return `<button class="tab ${view === it.key ? 'active' : ''}" onclick="setView('${it.key}')">
+      <span class="num">${it.key === 'overview' ? '◆' : it.num}</span>
+      <span>${esc(it.short || it.label)}</span>
+      <span class="count">${count}</span>
+    </button>`;
+  }).join('');
+
+  const note = document.getElementById('storageNote');
+  if (storageMode === 'drive') {
+    note.innerHTML = `
+      <div><span class="storage-dot"></span> Synced to Google Drive</div>
+      <div class="rail-actions">
+        <button class="rail-link" onclick="exportJson()">Export backup</button>
+        <button class="rail-link" onclick="document.getElementById('importFile').click()">Import</button>
+        <button class="rail-link" onclick="disconnectDrive()">Disconnect</button>
+      </div>`;
+  } else if (storageMode === 'drive-connecting') {
+    note.innerHTML = `<div>Connecting to Drive…</div>`;
+  } else if (storageMode === 'local') {
+    note.innerHTML = `
+      <div><span class="storage-dot local"></span> Saved on this device only</div>
+      <div class="rail-actions">
+        <button class="rail-link strong" onclick="connectDrive()">Connect Google Drive</button>
+        <button class="rail-link" onclick="exportJson()">Export backup</button>
+        <button class="rail-link" onclick="document.getElementById('importFile').click()">Import</button>
+      </div>`;
+  } else {
+    note.innerHTML = `Loading…`;
+  }
+}
+
+function setView(v) { view = v; filters = { search: '', status: 'all' }; renderAll(); }
+
+/* ===================== Overview ===================== */
+function renderOverview() {
+  const main = document.getElementById('main');
+  const c = countsByStatus(tasks);
+  const total = tasks.length || 1;
+
+  const catRows = CATEGORIES.map(cat => {
+    const list = tasks.filter(t => t.category === cat.key);
+    const cc = countsByStatus(list);
+    const t = list.length || 0;
+    const segs = STATUSES.map(s => {
+      const w = t ? (cc[s] / t) * 100 : 0;
+      return w > 0 ? `<span class="bar-seg" style="width:${w}%;background:${STATUS_COLOR[s]}"></span>` : '';
+    }).join('');
+    return `<div class="bar-row">
+      <span class="cl">${esc(cat.short)}</span>
+      <span class="bar-track">${t ? segs : ''}</span>
+      <span class="ct">${t}</span>
+    </div>`;
+  }).join('');
+
+  const now = tasks
+    .filter(t => catByKey[t.category] && catByKey[t.category].dateField && catByKey[t.category].dateKind !== 'expiry' && t[catByKey[t.category].dateField] && t.status !== 'Closed')
+    .map(t => ({ t, days: daysUntil(t[catByKey[t.category].dateField]) }))
+    .filter(x => x.days !== null && x.days >= 0 && x.days <= 7)
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 8);
+
+  const upcomingHtml = now.length ? now.map(({ t, days }) => {
+    const cat = catByKey[t.category];
+    const name = t[cat.primaryField] || '(untitled)';
+    const dayLabel = days === 0 ? 'Today' : days === 1 ? 'Tmrw' : `${days}d`;
+    return `<div class="upcoming-item">
+      <span class="ud ${days <= 1 ? 'soon' : ''}">${dayLabel}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="un">${esc(name)}</div>
+        <div class="us">${esc(cat.label)}${cat.descTpl(t) ? ' · ' + esc(cat.descTpl(t)) : ''}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-note">Nothing arriving in the next 7 days.</div>`;
+
+  // Expiry-tracked items (Agreements): flag both the window BEFORE end date
+  // (renewal action due) and anything already past it (overdue action).
+  const expiring = tasks
+    .filter(t => catByKey[t.category] && catByKey[t.category].dateKind === 'expiry' && t[catByKey[t.category].dateField] && t.status !== 'Closed')
+    .map(t => ({ t, days: daysUntil(t[catByKey[t.category].dateField]) }))
+    .filter(x => x.days !== null && x.days <= (catByKey[x.t.category].flagWindowDays || 30))
+    .sort((a, b) => a.days - b.days)
+    .slice(0, 8);
+
+  const expiringHtml = expiring.length ? expiring.map(({ t, days }) => {
+    const cat = catByKey[t.category];
+    const name = t[cat.primaryField] || '(untitled)';
+    const overdue = days < 0;
+    const dayLabel = overdue ? `${Math.abs(days)}d overdue` : days === 0 ? 'Ends today' : `${days}d left`;
+    return `<div class="upcoming-item">
+      <span class="ud ${overdue || days <= 7 ? 'soon' : ''}">${dayLabel}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="un">${esc(name)}</div>
+        <div class="us">${overdue ? 'Action needed — past end date' : 'Renewal action due before end date'}${cat.descTpl(t) ? ' · ' + esc(cat.descTpl(t)) : ''}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-note">No agreements need action in the next 30 days.</div>`;
+
+  main.innerHTML = `
+    <div class="topline">
+      <div>
+        <h1>Overview</h1>
+        <div class="meta">Everything on the desk right now, across all ${CATEGORIES.length} registers.</div>
+      </div>
+      <div class="today">${todayStr()}</div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat-chip open"><div class="n">${c['Open']}</div><div class="l">Open</div></div>
+      <div class="stat-chip process"><div class="n">${c['In Process']}</div><div class="l">In process</div></div>
+      <div class="stat-chip closed"><div class="n">${c['Closed']}</div><div class="l">Closed</div></div>
+      <div class="stat-chip"><div class="n">${tasks.length}</div><div class="l">Total logged</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h2>By register</h2>
+        ${catRows}
+        <div class="legend">
+          <span><span class="dot" style="background:${STATUS_COLOR['Open']}"></span>Open</span>
+          <span><span class="dot" style="background:${STATUS_COLOR['In Process']}"></span>In process</span>
+          <span><span class="dot" style="background:${STATUS_COLOR['Closed']}"></span>Closed</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Arriving this week</h2>
+        ${upcomingHtml}
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <h2>Agreements needing action</h2>
+      ${expiringHtml}
+    </div>
+  `;
+}
+
+/* ===================== Category view ===================== */
+function renderCategory(catKey) {
+  const cat = catByKey[catKey];
+  const main = document.getElementById('main');
+  let list = tasks.filter(t => t.category === catKey);
+
+  if (filters.status !== 'all') list = list.filter(t => t.status === filters.status);
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    list = list.filter(t => JSON.stringify(t).toLowerCase().includes(q));
+  }
+  list = list.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  const cc = countsByStatus(tasks.filter(t => t.category === catKey));
+
+  const cols = cat.fields.filter(f => f.type !== 'textarea');
+  const hasRemarks = cat.fields.some(f => f.key === 'remarks');
+
+  const rowsHtml = list.length ? list.map(t => {
+    const cells = cols.map(f => {
+      let v = t[f.key];
+      if (f.type === 'date') v = fmtDate(v);
+      if (f.type === 'multiselect') v = (v || []).join(', ');
+      return `<td>${esc(v || '—')}</td>`;
+    }).join('');
+    const flag = (cat.dateField && t[cat.dateField] && t.status !== 'Closed') ? (() => {
+      const d = daysUntil(t[cat.dateField]);
+      if (d === null) return '';
+      const win = cat.flagWindowDays || 2;
+      if (cat.dateKind === 'expiry') {
+        if (d < 0) return `<span class="arrival-flag">expired ${Math.abs(d)}d ago</span>`;
+        if (d <= win) return `<span class="arrival-flag">renew in ${d}d</span>`;
+        return '';
+      }
+      if (d < 0) return `<span class="arrival-flag">${Math.abs(d)}d overdue</span>`;
+      if (d <= win) return `<span class="arrival-flag">in ${d}d</span>`;
+      return '';
+    })() : '';
+    return `<tr>
+      ${cells}
+      ${hasRemarks ? `<td class="rem-note">${esc(t.remarks || '—')}${flag}</td>` : `<td>${flag}</td>`}
+      <td>
+        <select class="status-select ${STATUS_CLASS[t.status] || 'st-open'}" onchange="patchTask('${t.id}',{status:this.value})">
+          ${STATUSES.map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="icon-btn" title="Edit" onclick="openEdit('${catKey}','${t.id}')">✎</button>
+        <button class="icon-btn" title="Delete" onclick="confirmDelete('${t.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="${cols.length + 3}"><div class="empty-state"><div class="eg">🗒️</div><div class="et">Nothing logged here yet</div>Use "Log task" to add the first entry.</div></td></tr>`;
+
+  main.innerHTML = `
+    <div class="cat-head">
+      <div>
+        <h1>${esc(cat.label)}</h1>
+        <div class="meta">${cc['Open']} open · ${cc['In Process']} in process · ${cc['Closed']} closed</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAdd('${catKey}')">+ Log task</button>
+    </div>
+    <div class="toolbar">
+      <input type="text" placeholder="Search this register…" value="${esc(filters.search)}" oninput="filters.search=this.value; renderCategory('${catKey}')">
+      <div class="status-filter">
+        <button class="pill-filter ${filters.status==='all'?'active':''}" onclick="filters.status='all'; renderCategory('${catKey}')">All</button>
+        ${STATUSES.map(s => `<button class="pill-filter ${filters.status===s?'active':''}" onclick="filters.status='${s}'; renderCategory('${catKey}')">${s}</button>`).join('')}
+      </div>
+    </div>
+    <table class="reg">
+      <thead><tr>
+        ${cols.map(f => `<th>${esc(f.label)}</th>`).join('')}
+        <th>${hasRemarks ? 'Remarks' : ''}</th>
+        <th>Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+}
+
+/* ===================== Render dispatch ===================== */
+function renderAll() {
+  renderNav();
+  if (view === 'overview') renderOverview();
+  else renderCategory(view);
+}
+
+/* ===================== Modal / form ===================== */
+function fieldHtml(f, val) {
+  val = val == null ? '' : val;
+  if (f.type === 'select') {
+    return `<select id="f_${f.key}">
+      <option value="">—</option>
+      ${f.options.map(o => `<option value="${esc(o)}" ${val === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}
+    </select>`;
+  }
+  if (f.type === 'multiselect') {
+    const arr = Array.isArray(val) ? val : [];
+    return `<div class="checks">${f.options.map(o => `
+      <label class="check-chip"><input type="checkbox" value="${esc(o)}" ${arr.includes(o) ? 'checked' : ''} data-multi="${f.key}"> ${esc(o)}</label>
+    `).join('')}</div>`;
+  }
+  if (f.type === 'textarea') {
+    return `<textarea id="f_${f.key}">${esc(val)}</textarea>`;
+  }
+  if (f.type === 'date') {
+    return `<input type="date" id="f_${f.key}" value="${esc(val)}">`;
+  }
+  return `<input type="text" id="f_${f.key}" value="${esc(val)}">`;
+}
+
+function openAdd(catKey) {
+  editingId = null;
+  const cat = catByKey[catKey];
+  document.getElementById('modalTitle').textContent = 'Log task — ' + cat.label;
+  document.getElementById('modalBody').innerHTML = cat.fields.map(f => `
+    <div class="field"><label>${esc(f.label)}${f.required ? ' *' : ''}</label>${fieldHtml(f, '')}</div>
+  `).join('');
+  document.getElementById('saveBtn').onclick = () => saveForm(catKey);
+  document.getElementById('overlay').classList.add('show');
+}
+
+function openEdit(catKey, id) {
+  editingId = id;
+  const cat = catByKey[catKey];
+  const t = tasks.find(x => x.id === id);
+  document.getElementById('modalTitle').textContent = 'Edit — ' + cat.label;
+  document.getElementById('modalBody').innerHTML = cat.fields.map(f => `
+    <div class="field"><label>${esc(f.label)}${f.required ? ' *' : ''}</label>${fieldHtml(f, t[f.key])}</div>
+  `).join('');
+  document.getElementById('saveBtn').onclick = () => saveForm(catKey);
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('show'); editingId = null; }
+
+function saveForm(catKey) {
+  const cat = catByKey[catKey];
+  const data = {};
+  let missingRequired = false;
+  cat.fields.forEach(f => {
+    if (f.type === 'multiselect') {
+      const boxes = document.querySelectorAll(`input[data-multi="${f.key}"]:checked`);
+      data[f.key] = Array.from(boxes).map(b => b.value);
+    } else {
+      const el = document.getElementById('f_' + f.key);
+      const v = el ? el.value.trim() : '';
+      if (f.required && !v) missingRequired = true;
+      data[f.key] = v;
+    }
+  });
+  if (missingRequired) { alert('Please fill the required field(s) marked with *.'); return; }
+
+  if (editingId) {
+    patchTask(editingId, data);
+  } else {
+    addTask(catKey, data);
+  }
+  closeModal();
+}
+
+function confirmDelete(id) {
+  if (confirm('Remove this entry? This can\'t be undone.')) removeTask(id);
+}
+
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'overlay') closeModal();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+/* ===================== Boot ===================== */
+initStorage();
+</script>
+</body>
+</html>
